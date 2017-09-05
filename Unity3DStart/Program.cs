@@ -17,6 +17,8 @@ namespace Unity3DStart
         /// 
         static string url = "http://app-test.orbbec.me/upgrade/package/";
         static string data = "";
+        static string data_zip_path = "";
+        private static string data_name="";
 
         [STAThread]
         static void Main()
@@ -45,9 +47,7 @@ namespace Unity3DStart
             JObject obj = JObject.Parse(returnstr);
             string returncode;
             if (obj != null)
-            {
-                Console.WriteLine("data url         =" + obj["data"]["url"]);
-                Console.WriteLine("data type         =" + obj["data"]["type"]);
+            {       
                 returncode = obj["code"].ToString();
                 Console.WriteLine("code         =" + obj["code"]);
             }
@@ -64,17 +64,20 @@ namespace Unity3DStart
                 WriteToLocal(returnstr);
 
                 DownloadZipFromService(data_url);
-                UnzipAndInstallPackage();
+                
                 startUnity3DScanner();
                 System.Environment.Exit(0);
             }
             else if (returncode.Equals("99"))
             {
                 Console.WriteLine("Already newest!");
+                startUnity3DScanner();
+                System.Environment.Exit(0);
             }
             else {
                 Console.WriteLine("Service wrong!");
-                Application.Exit();
+                startUnity3DScanner();
+                System.Environment.Exit(0);
             }
 
             Application.Run(new Form1());
@@ -103,6 +106,8 @@ namespace Unity3DStart
             StreamReader sr = new StreamReader("version.ini", Encoding.Default);
            // Console.Write("ini       = "+sr.ReadToEnd());
             string json = sr.ReadToEnd().ToString();
+            sr.Close();
+            
             Console.Write("start:");
             Console.Write("" + json);
             Console.Write("end");
@@ -112,13 +117,6 @@ namespace Unity3DStart
             data = "channel_no=scanner-app&version_code="+version_code;
         }
 
-        private static void UnzipAndInstallPackage()
-        {
-
-            //unzip and install
-            ZipHelper.UnZip("e:/data.zip","e:/test-scanner/");
-
-        }
 
         private static void startUnity3DScanner()
         {
@@ -135,10 +133,19 @@ namespace Unity3DStart
         private static void DownloadZipFromService(string data_url)
         {
             WebClient client = new WebClient();
-            string recievePath = @"E:\";
-            client.DownloadFile(data_url,recievePath+System.IO.Path.GetFileName(data_url));
+            string recievePath = System.Environment.CurrentDirectory;
+            Console.WriteLine("recievePath       =" + recievePath);
+            data_name = System.IO.Path.GetFileName(data_url);
+            Console.WriteLine("dataname       ="+data_name);
+            client.DownloadFile(data_url,recievePath+ data_name);
 
-           // throw new NotImplementedException();
+            UnzipAndInstallPackage(recievePath + data_name, recievePath);
+            // throw new NotImplementedException();
+        }
+
+        private static void UnzipAndInstallPackage(string v, string recievePath)
+        {
+            ZipHelper.UnZip(v, recievePath);
         }
 
         public static string  HttpGet(string Url, string postDataStr) {
