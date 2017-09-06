@@ -20,71 +20,77 @@ namespace Unity3DStart
         static string data_zip_path = "";
         private static string data_name="";
 
+
         [STAThread]
         static void Main()
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-
-            Form1.ShowSplashScreen();
-            // 进行自己的操作：加载组件，加载文件等等 
-            // 示例代码为休眠一会 
-            System.Threading.Thread.Sleep(3000);
-            // 关闭 
-            if (Form1.Instance != null)
-            {
-                Form1.Instance.BeginInvoke(new MethodInvoker(Form1.Instance.Dispose));
-                Form1.Instance = null;
-            }
-            //Application.Run(new FormMain());
-            ReadVersionFromLocal();
-            //data = "channel_no=scanner-app&version_code=0";
-            string returnstr = HttpGet(url, data);
-            
-
-            Console.WriteLine(returnstr);
-
-            JObject obj = JObject.Parse(returnstr);
-            string returncode;
-            if (obj != null)
-            {       
-                returncode = obj["code"].ToString();
-                Console.WriteLine("code         =" + obj["code"]);
-            }
-            else {
-                returncode = "";
-                Console.WriteLine("null-------------- "); 
-            }
-
-            if (returncode.Equals("0"))
-            {
-                Console.WriteLine("Need to Upgrade");
-                string data_url = obj["data"]["url"].ToString();
-                // string new_version_code = obj["data"]["version_code"].ToString();
-                WriteToLocal(returnstr);
-
-                DownloadZipFromService(data_url);
-                
-                startUnity3DScanner();
-                System.Environment.Exit(0);
-            }
-            else if (returncode.Equals("99"))
-            {
-                Console.WriteLine("Already newest!");
-                startUnity3DScanner();
-                System.Environment.Exit(0);
-            }
-            else {
-                Console.WriteLine("Service wrong!");
-                startUnity3DScanner();
-                System.Environment.Exit(0);
-            }
-
             Application.Run(new Form1());
+            /*
+                        Form1.ShowSplashScreen();
+                        // 进行自己的操作：加载组件，加载文件等等 
+                        // 示例代码为休眠一会 
+                        System.Threading.Thread.Sleep(3000);
+                        // 关闭 
+                        if (Form1.Instance != null)
+                        {
+                            Form1.Instance.BeginInvoke(new MethodInvoker(Form1.Instance.Dispose));
+                            Form1.Instance = null;
+                        }
 
 
 
+                        //Application.Run(new FormMain());
+                        ReadVersionFromLocal();
+                        //data = "channel_no=scanner-app&version_code=0";
+                        string returnstr = HttpGet(url, data);
 
+
+                        Console.WriteLine(returnstr);
+
+                        JObject obj = JObject.Parse(returnstr);
+                        string returncode;
+                        if (obj != null)
+                        {       
+                            returncode = obj["code"].ToString();
+                            Console.WriteLine("code         =" + obj["code"]);
+                        }
+                        else {
+                            returncode = "";
+                            Console.WriteLine("null-------------- "); 
+                        }
+
+                        if (returncode.Equals("0"))
+                        {
+                            Console.WriteLine("Need to Upgrade");
+                            string data_url = obj["data"]["url"].ToString();
+                            // string new_version_code = obj["data"]["version_code"].ToString();
+
+
+                            DownloadZipFromService(data_url);
+                            //UnzipAndInstallPackage();
+                           // WriteToLocal(returnstr);
+                            startUnity3DScanner();
+                            System.Environment.Exit(0);
+                        }
+                        else if (returncode.Equals("99"))
+                        {
+                            Console.WriteLine("Already newest!");
+                            //startUnity3DScanner();
+                            //System.Environment.Exit(0);
+                        }
+                        else {
+                            Console.WriteLine("Service wrong!");
+                            startUnity3DScanner();
+                            System.Environment.Exit(0);
+                        }
+
+                        Application.Run(new Form1());
+
+
+
+                */
 
         }
 
@@ -137,11 +143,15 @@ namespace Unity3DStart
             Console.WriteLine("recievePath       =" + recievePath);
             data_name = System.IO.Path.GetFileName(data_url);
             Console.WriteLine("dataname       ="+data_name);
-            client.DownloadFile(data_url,recievePath+ data_name);
+              //client.DownloadFile(data_url,recievePath+ data_name);
+            client.DownloadFileAsync(new Uri(data_url), recievePath + data_name);
+            //DownloadFile.DownloadFile3(data_url, recievePath + data_name, Form1.progressBar2, Form1.label2);
+            
 
             UnzipAndInstallPackage(recievePath + data_name, recievePath);
             // throw new NotImplementedException();
         }
+
 
         private static void UnzipAndInstallPackage(string v, string recievePath)
         {
